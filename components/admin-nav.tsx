@@ -24,7 +24,7 @@ const utilityItems: DrawerItem[] = [
   { label: "Students", subtitle: "Browse all registered students", path: "/students", icon: "person-circle" },
   { label: "Payments", subtitle: "Manual proofs and payout queues", path: "/payments", icon: "wallet" },
   { label: "Programs", subtitle: "Live sessions and sprint review", path: "/programs", icon: "layers" },
-  { label: "Platform", subtitle: "Opportunities, resources, certifications, bootcamps", path: "/platform", icon: "albums" },
+  { label: "Platform", subtitle: "Banners, opportunities, resources, certifications, bootcamps", path: "/platform", icon: "albums" },
   { label: "Network", subtitle: "Connections, follows, mentor groups, audit logs", path: "/network", icon: "git-network" }
 ];
 

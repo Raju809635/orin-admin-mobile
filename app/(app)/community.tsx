@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Linking, StyleSheet, Text, View } from "react-native";
-import { ActionButton, Card, ChipTabs, EmptyState, HeroCard, Label, LoadingState, Screen, SectionTitle, StatGrid, Value } from "@/components/ui";
+import { ActionButton, Card, ChipTabs, EmptyState, FormField, HeroCard, Label, LoadingState, Screen, SectionTitle, StatGrid, Value } from "@/components/ui";
 import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
@@ -17,6 +17,18 @@ export default function CommunityScreen() {
   const [posts, setPosts] = useState<AdminFeedPostRecord[]>([]);
   const [challenges, setChallenges] = useState<AdminChallengeRecord[]>([]);
   const [sprints, setSprints] = useState<AdminSprintRecord[]>([]);
+  const [creatingChallenge, setCreatingChallenge] = useState(false);
+  const [challengeForm, setChallengeForm] = useState({
+    title: "",
+    domain: "",
+    description: "",
+    prize: "",
+    deadline: "",
+    submissionType: "",
+    bannerImageUrl: "",
+    skillsCsv: "",
+    tasksCsv: ""
+  });
 
   async function load() {
     if (!token) return;
@@ -60,6 +72,54 @@ export default function CommunityScreen() {
       await load();
     } catch (err: any) {
       Alert.alert("Update failed", err?.message || "Please try again.");
+    }
+  }
+
+  async function createChallenge() {
+    if (!token) return;
+    if (!challengeForm.title.trim() || !challengeForm.deadline.trim()) {
+      Alert.alert("Missing fields", "Title and deadline are required.");
+      return;
+    }
+    try {
+      setCreatingChallenge(true);
+      await apiRequest(
+        "/api/admin/network/challenges",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            title: challengeForm.title.trim(),
+            domain: challengeForm.domain.trim(),
+            description: challengeForm.description.trim(),
+            prize: challengeForm.prize.trim(),
+            deadline: challengeForm.deadline.trim(),
+            submissionType: challengeForm.submissionType.trim(),
+            bannerImageUrl: challengeForm.bannerImageUrl.trim(),
+            skills: challengeForm.skillsCsv.split(",").map((item) => item.trim()).filter(Boolean),
+            tasks: challengeForm.tasksCsv.split(",").map((item) => item.trim()).filter(Boolean),
+            isFeatured: true
+          })
+        },
+        token
+      );
+      setChallengeForm({
+        title: "",
+        domain: "",
+        description: "",
+        prize: "",
+        deadline: "",
+        submissionType: "",
+        bannerImageUrl: "",
+        skillsCsv: "",
+        tasksCsv: ""
+      });
+      await load();
+      Alert.alert("Created", "Challenge campaign is live in ORIN admin.");
+      setTab("challenges");
+    } catch (err: any) {
+      Alert.alert("Create failed", err?.message || "Please try again.");
+    } finally {
+      setCreatingChallenge(false);
     }
   }
 
@@ -125,6 +185,81 @@ export default function CommunityScreen() {
           { label: "Sprints", value: "sprints" }
         ]}
       />
+
+      {tab === "challenges" ? (
+        <Card>
+          <Text style={styles.createTitle}>Launch Challenge Or Banner Campaign</Text>
+          <Text style={styles.createSubtitle}>
+            Use the challenge banner and featured flag to place visible ORIN campaigns in front of students.
+          </Text>
+          <FormField
+            label="Title"
+            value={challengeForm.title}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, title: text }))}
+            placeholder="AI Roadmap Challenge"
+          />
+          <FormField
+            label="Domain"
+            value={challengeForm.domain}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, domain: text }))}
+            placeholder="Technology & AI"
+          />
+          <FormField
+            label="Description"
+            value={challengeForm.description}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, description: text }))}
+            placeholder="What should students do?"
+            multiline
+          />
+          <FormField
+            label="Prize"
+            value={challengeForm.prize}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, prize: text }))}
+            placeholder="Certificate + swag + spotlight"
+          />
+          <FormField
+            label="Deadline"
+            value={challengeForm.deadline}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, deadline: text }))}
+            placeholder="2026-05-01"
+            helperText="Use YYYY-MM-DD format for now."
+          />
+          <FormField
+            label="Submission Type"
+            value={challengeForm.submissionType}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, submissionType: text }))}
+            placeholder="link / document / github"
+          />
+          <FormField
+            label="Banner Image URL"
+            value={challengeForm.bannerImageUrl}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, bannerImageUrl: text }))}
+            placeholder="https://..."
+          />
+          <FormField
+            label="Skills"
+            value={challengeForm.skillsCsv}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, skillsCsv: text }))}
+            placeholder="Python, ML, Prompting"
+            helperText="Comma-separated skills"
+          />
+          <FormField
+            label="Tasks"
+            value={challengeForm.tasksCsv}
+            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, tasksCsv: text }))}
+            placeholder="Build prototype, upload demo, share summary"
+            helperText="Comma-separated task steps"
+          />
+          <View style={styles.actions}>
+            <ActionButton
+              label={creatingChallenge ? "Creating..." : "Create Challenge"}
+              tone="primary"
+              disabled={creatingChallenge}
+              onPress={createChallenge}
+            />
+          </View>
+        </Card>
+      ) : null}
 
       {error ? (
         <Card>
@@ -263,6 +398,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm
+  },
+  createTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "800",
+    marginBottom: spacing.xs
+  },
+  createSubtitle: {
+    color: colors.textMuted,
+    lineHeight: 21,
+    marginBottom: spacing.md
   },
   errorText: {
     color: colors.danger,

@@ -43,7 +43,7 @@ export default function OverviewScreen() {
     return [
       { label: "Users", value: demographics.totals.users, tone: "primary" as const },
       { label: "Pending Mentors", value: demographics.totals.pendingMentors, tone: "warning" as const },
-      { label: "Bookings", value: demographics.totals.bookings, tone: "accent" as const },
+      { label: "Revenue", value: `INR ${Math.round(demographics.totals.revenue || 0)}`, tone: "accent" as const },
       { label: "Upcoming Live", value: networkOverview.communities.upcomingLiveSessions, tone: "danger" as const }
     ];
   }, [demographics, networkOverview]);
@@ -88,21 +88,58 @@ export default function OverviewScreen() {
           <Text style={styles.actionText}>Review sprints, moderate feed posts, and control challenge visibility in a mobile-first flow.</Text>
           <ActionButton label="Open Community" onPress={() => router.push("/community")} tone="primary" />
         </Card>
+        <Card style={styles.actionCard}>
+          <Text style={styles.actionTitle}>Platform Builder</Text>
+          <Text style={styles.actionText}>Create bootcamps, hackathons, competitions, resources, and admin-verified certification tracks.</Text>
+          <ActionButton label="Open Platform" onPress={() => router.push("/platform")} tone="primary" />
+        </Card>
+        <Card style={styles.actionCard}>
+          <Text style={styles.actionTitle}>Students & Payments</Text>
+          <Text style={styles.actionText}>Browse all students, monitor proofs, and manage payout queues from the same admin phone flow.</Text>
+          <View style={styles.inlineActions}>
+            <ActionButton label="Students" onPress={() => router.push("/students")} tone="default" />
+            <ActionButton label="Payments" onPress={() => router.push("/payments")} tone="primary" />
+          </View>
+        </Card>
       </View>
 
       <SectionTitle title="Platform snapshot" subtitle="These numbers help you sense risk and opportunity quickly." />
       <Card>
         <Label>Role distribution</Label>
-        <Value>Students: {demographics?.roles.students || 0} | Mentors: {demographics?.roles.mentors || 0}</Value>
+        <Value>Students: {demographics?.roles.students || 0} | Mentors: {demographics?.roles.mentors || 0} | Admins: {demographics?.roles.admins || 0}</Value>
+        <View style={{ height: spacing.md }} />
+        <Label>Revenue & sessions</Label>
+        <Value>
+          Sessions: {demographics?.totals.sessions || 0} | Paid: {demographics?.totals.paidSessions || 0} | Bookings: {demographics?.totals.bookings || 0}
+        </Value>
         <View style={{ height: spacing.md }} />
         <Label>Network health</Label>
         <Value>
           Posts: {networkOverview?.posts.total || 0} | Connections pending: {networkOverview?.network.pendingConnections || 0}
         </Value>
+      </Card>
+
+      <SectionTitle title="Regional reach" subtitle="This shows where ORIN is active today based on student and mentor profile data." />
+      <Card>
+        <Label>Top student states</Label>
+        <Value muted>
+          {(demographics?.regionalReach?.studentStates || [])
+            .slice(0, 4)
+            .map((item) => `${item.name} (${item.count})`)
+            .join(" | ") || "Ask users to save state in profile to strengthen regional stats."}
+        </Value>
         <View style={{ height: spacing.md }} />
-        <Label>Community motion</Label>
-        <Value>
-          Groups: {networkOverview?.communities.activeGroups || 0} | Challenges: {networkOverview?.communities.activeChallenges || 0}
+        <Label>Top colleges</Label>
+        <Value muted>
+          {(demographics?.regionalReach?.studentColleges || [])
+            .slice(0, 4)
+            .map((item) => `${item.name} (${item.count})`)
+            .join(" | ") || "No college data yet."}
+        </Value>
+        <View style={{ height: spacing.md }} />
+        <Label>Download intelligence</Label>
+        <Value muted>
+          Play Store download and install region metrics need Google Play Console or Firebase Analytics integration. This admin app is currently showing live ORIN profile-region activity instead.
         </Value>
       </Card>
     </Screen>
@@ -116,6 +153,11 @@ const styles = StyleSheet.create({
   },
   actionCard: {
     gap: spacing.md
+  },
+  inlineActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
   },
   actionTitle: {
     color: colors.text,

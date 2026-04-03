@@ -21,20 +21,29 @@ export type Demographics = {
   totals: {
     users: number;
     bookings: number;
+    sessions?: number;
+    paidSessions?: number;
+    revenue?: number;
     pendingMentors: number;
     approvedMentors: number;
   };
   roles: {
     students: number;
     mentors: number;
+    admins?: number;
   };
   bookings: {
     pending: number;
     approved: number;
     rejected: number;
   };
-  mentorCategories: Array<{ category: string; count: number }>;
-  studentInterests: Array<{ category: string; count: number }>;
+  mentorCategories: { category: string; count: number }[];
+  studentInterests?: { category: string; count: number }[];
+  regionalReach?: {
+    studentStates: { name: string; count: number }[];
+    studentColleges: { name: string; count: number }[];
+    mentorStates: { name: string; count: number }[];
+  };
 };
 
 export type NetworkAdminOverview = {

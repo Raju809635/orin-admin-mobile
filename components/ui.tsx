@@ -5,6 +5,8 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
+  TextInputProps,
   View,
   ViewStyle
 } from "react-native";
@@ -181,6 +183,39 @@ export function LoadingState({ label = "Loading..." }: { label?: string }) {
   );
 }
 
+export function FormField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline = false,
+  helperText,
+  ...rest
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  multiline?: boolean;
+  helperText?: string;
+} & TextInputProps) {
+  return (
+    <View style={styles.fieldWrap}>
+      <Text style={styles.label}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.textMuted}
+        multiline={multiline}
+        style={[styles.input, multiline ? styles.inputMultiline : null]}
+        {...rest}
+      />
+      {helperText ? <Text style={styles.helperText}>{helperText}</Text> : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -286,6 +321,29 @@ const styles = StyleSheet.create({
   },
   muted: {
     color: colors.textMuted
+  },
+  fieldWrap: {
+    marginBottom: spacing.md
+  },
+  input: {
+    backgroundColor: colors.cardAlt,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radii.md,
+    color: colors.text,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    fontSize: 15
+  },
+  inputMultiline: {
+    minHeight: 96,
+    textAlignVertical: "top"
+  },
+  helperText: {
+    color: colors.textMuted,
+    fontSize: 12,
+    marginTop: 6,
+    lineHeight: 18
   },
   chipRow: {
     flexDirection: "row",
