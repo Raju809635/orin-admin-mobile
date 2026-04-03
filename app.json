@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "ORIN Admin",
+    "slug": "orin-admin-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "orinadminmobile",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.orin.admin"
+    },
+    "android": {
+      "package": "com.orin.admin",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#09131F"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#09131F"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "apiBaseUrl": "https://orin-backend.onrender.com",
+      "eas": {
+        "projectId": "f4c88bf6-286c-429c-b5c8-3f387cbe30f7"
+      }
+    },
+    "owner": "raju8096"
+  }
+}
