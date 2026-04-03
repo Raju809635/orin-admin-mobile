@@ -5,6 +5,7 @@ import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
 import { AdminLiveSessionRecord, MentorProfileRecord, SessionPayoutRecord } from "@/lib/types";
+import { AdminTopBar } from "@/components/admin-nav";
 
 type MentorshipTab = "mentors" | "sessions" | "payments";
 
@@ -107,7 +108,7 @@ export default function MentorshipScreen() {
 
   return (
     <Screen>
-      <View style={{ height: spacing.lg }} />
+      <AdminTopBar title="Mentorship" />
       <HeroCard
         title="Mentorship Control"
         subtitle="Keep mentors healthy, live sessions visible, and payouts moving with mobile-first oversight."

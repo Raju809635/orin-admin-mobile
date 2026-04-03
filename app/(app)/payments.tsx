@@ -5,6 +5,7 @@ import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
 import { AdminSprintPayoutRecord, ManualPaymentRecord, SessionPayoutRecord } from "@/lib/types";
+import { AdminTopBar } from "@/components/admin-nav";
 
 type PaymentTab = "manual" | "session" | "sprint";
 
@@ -13,6 +14,7 @@ export default function PaymentsScreen() {
   const [paymentTab, setPaymentTab] = useState<PaymentTab>("manual");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [sprintUnavailable, setSprintUnavailable] = useState(false);
   const [manualPayments, setManualPayments] = useState<ManualPaymentRecord[]>([]);
   const [sessionPayouts, setSessionPayouts] = useState<SessionPayoutRecord[]>([]);
   const [sprintPayouts, setSprintPayouts] = useState<AdminSprintPayoutRecord[]>([]);
@@ -22,14 +24,33 @@ export default function PaymentsScreen() {
     try {
       setLoading(true);
       setError("");
-      const [manualData, sessionData, sprintData] = await Promise.all([
+      const [manualResult, sessionResult, sprintResult] = await Promise.allSettled([
         apiRequest<ManualPaymentRecord[]>("/api/sessions/admin/manual-payments", {}, token),
         apiRequest<SessionPayoutRecord[]>("/api/sessions/admin/payouts", {}, token),
         apiRequest<AdminSprintPayoutRecord[]>("/api/admin/network/sprint-payouts", {}, token)
       ]);
-      setManualPayments(manualData);
-      setSessionPayouts(sessionData);
-      setSprintPayouts(sprintData);
+
+      if (manualResult.status === "fulfilled") {
+        setManualPayments(manualResult.value);
+      } else {
+        setManualPayments([]);
+        setError((current) => current || (manualResult.reason?.message || "Failed to load manual payment proofs"));
+      }
+
+      if (sessionResult.status === "fulfilled") {
+        setSessionPayouts(sessionResult.value);
+      } else {
+        setSessionPayouts([]);
+        setError((current) => current || (sessionResult.reason?.message || "Failed to load 1:1 payouts"));
+      }
+
+      if (sprintResult.status === "fulfilled") {
+        setSprintPayouts(sprintResult.value);
+        setSprintUnavailable(false);
+      } else {
+        setSprintPayouts([]);
+        setSprintUnavailable(true);
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to load payments");
     } finally {
@@ -114,7 +135,7 @@ export default function PaymentsScreen() {
 
   return (
     <Screen>
-      <View style={{ height: spacing.lg }} />
+      <AdminTopBar title="Payments" />
       <HeroCard
         title="Payments & Payouts"
         subtitle="Handle verification, release mentor payouts, and keep the money layer transparent and controlled."
@@ -128,7 +149,7 @@ export default function PaymentsScreen() {
         options={[
           { label: "Manual Proofs", value: "manual" },
           { label: "1:1 Payouts", value: "session" },
-          { label: "Sprint Payouts", value: "sprint" }
+          ...(sprintUnavailable ? [] : [{ label: "Sprint Payouts", value: "sprint" as PaymentTab }])
         ]}
       />
 
@@ -136,6 +157,15 @@ export default function PaymentsScreen() {
         <Card>
           <Text style={{ color: colors.danger, fontWeight: "700", marginBottom: spacing.sm }}>{error}</Text>
           <ActionButton label="Retry" onPress={load} tone="warning" />
+        </Card>
+      ) : null}
+
+      {sprintUnavailable ? (
+        <Card>
+          <Text style={{ color: colors.warning, fontWeight: "700", marginBottom: spacing.xs }}>Sprint payouts are unavailable on the current backend deploy.</Text>
+          <Text style={{ color: colors.textMuted, lineHeight: 21 }}>
+            Manual proofs and 1:1 mentor payouts are still working. Once the backend includes sprint payout routes, they will appear here automatically.
+          </Text>
         </Card>
       ) : null}
 

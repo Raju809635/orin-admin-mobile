@@ -5,6 +5,7 @@ import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiBaseUrl, apiRequest } from "@/lib/api";
 import { AdminNotificationRecord } from "@/lib/types";
+import { AdminTopBar } from "@/components/admin-nav";
 
 export default function MoreScreen() {
   const { user, logout, token } = useAuth();
@@ -68,7 +69,7 @@ export default function MoreScreen() {
 
   return (
     <Screen>
-      <View style={{ height: spacing.lg }} />
+      <AdminTopBar title="More" />
       <HeroCard
         title="Admin Settings"
         subtitle="Mobile control should stay secure, simple, and transparent. This tab keeps identity and environment details close."

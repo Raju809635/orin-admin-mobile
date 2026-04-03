@@ -66,6 +66,24 @@ export default function AppLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="menu" color={color} size={size} />
         }}
       />
+      <Tabs.Screen
+        name="payments"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="programs"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="students"
+        options={{
+          href: null
+        }}
+      />
     </Tabs>
   );
 }

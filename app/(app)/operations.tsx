@@ -5,6 +5,7 @@ import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
 import { CollaborateApplicationRecord, ComplaintRecord, PendingMentorRecord } from "@/lib/types";
+import { AdminTopBar } from "@/components/admin-nav";
 
 type OperationsTab = "approvals" | "complaints" | "collaborations";
 
@@ -115,7 +116,7 @@ export default function OperationsScreen() {
 
   return (
     <Screen>
-      <View style={{ height: spacing.lg }} />
+      <AdminTopBar title="Operations" />
       <HeroCard
         title="Operations Center"
         subtitle="Move fast on mentor approvals, complaints, and collaboration requests without getting trapped in a web-table workflow."

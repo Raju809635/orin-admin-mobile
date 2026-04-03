@@ -6,6 +6,7 @@ import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
 import { Demographics, NetworkAdminOverview } from "@/lib/types";
+import { AdminTopBar } from "@/components/admin-nav";
 
 export default function OverviewScreen() {
   const router = useRouter();
@@ -53,7 +54,7 @@ export default function OverviewScreen() {
 
   return (
     <Screen>
-      <View style={{ height: spacing.lg }} />
+      <AdminTopBar title="Overview" />
       <HeroCard
         title={`Welcome, ${user?.name?.split(" ")[0] || "Admin"}`}
         subtitle="Track the platform pulse, move fast on approvals, and stay on top of ORIN programs and payouts."

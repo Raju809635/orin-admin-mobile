@@ -5,6 +5,7 @@ import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
 import { AdminChallengeRecord, AdminFeedPostRecord, AdminSprintRecord } from "@/lib/types";
+import { AdminTopBar } from "@/components/admin-nav";
 
 type CommunityTab = "feed" | "challenges" | "sprints";
 
@@ -106,7 +107,7 @@ export default function CommunityScreen() {
 
   return (
     <Screen>
-      <View style={{ height: spacing.lg }} />
+      <AdminTopBar title="Community" />
       <HeroCard
         title="Community Control"
         subtitle="Moderate the feed, keep challenges healthy, and approve the cohort programs students actually see."
