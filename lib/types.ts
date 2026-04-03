@@ -312,3 +312,127 @@ export type AdminChallengeRecord = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type AdminOpportunityRecord = {
+  _id: string;
+  title: string;
+  company?: string;
+  type?: string;
+  role?: string;
+  duration?: string;
+  location?: string;
+  mode?: string;
+  stipend?: string;
+  applicationDeadline?: string | null;
+  eligibility?: string;
+  logoUrl?: string;
+  applicationUrl?: string;
+  description?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  postedBy?: { _id: string; name: string; email: string; role: Role };
+};
+
+export type AdminKnowledgeResourceRecord = {
+  _id: string;
+  domain?: string;
+  type?: string;
+  title: string;
+  description?: string;
+  url?: string;
+  format?: string;
+  difficulty?: string;
+  estimatedMinutes?: number;
+  tags?: string[];
+  thumbnailUrl?: string;
+  learningOutcome?: string;
+  approvalStatus?: "pending" | "approved" | "rejected";
+  rejectionReason?: string;
+  isFeatured?: boolean;
+  isActive?: boolean;
+  submittedBy?: { _id: string; name: string; email: string; role: Role };
+  reviewedBy?: { _id: string; name: string; email: string; role: Role };
+};
+
+export type AdminCertificationTrackRecord = {
+  _id: string;
+  title: string;
+  level?: string;
+  domain?: string;
+  description?: string;
+  requirements?: string[];
+  coverImageUrl?: string;
+  badgeLabel?: string;
+  isActive?: boolean;
+};
+
+export type AdminCertificationRequestRecord = {
+  _id: string;
+  status?: "pending" | "approved" | "rejected";
+  note?: string;
+  createdAt?: string;
+  reviewedAt?: string;
+  userId?: { _id: string; name: string; email: string; role: Role };
+  trackId?: { _id: string; title: string; level?: string; domain?: string };
+};
+
+export type AdminBootcampRecord = {
+  _id: string;
+  title: string;
+  domain?: string;
+  description?: string;
+  mode?: string;
+  coverImageUrl?: string;
+  registrationUrl?: string;
+  startsAt: string;
+  endsAt?: string | null;
+  seats?: number;
+  isActive?: boolean;
+  isFeatured?: boolean;
+};
+
+export type AdminConnectionRecord = {
+  _id: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  requesterId?: { _id: string; name: string; email: string; role: Role };
+  recipientId?: { _id: string; name: string; email: string; role: Role };
+};
+
+export type AdminFollowRecord = {
+  _id: string;
+  createdAt?: string;
+  followerId?: { _id: string; name: string; email: string; role: Role };
+  followingId?: { _id: string; name: string; email: string; role: Role };
+};
+
+export type AdminMentorGroupRecord = {
+  _id: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  isActive?: boolean;
+  updatedAt?: string;
+  mentorId?: { _id: string; name: string; email: string; role: Role; approvalStatus?: string };
+  members?: string[];
+};
+
+export type AuditLogRecord = {
+  _id: string;
+  action?: string;
+  status?: string;
+  entityType?: string;
+  entityId?: string;
+  metadata?: Record<string, unknown>;
+  createdAt?: string;
+  actorId?: { _id: string; name: string; email: string; role: Role };
+};
+
+export type AuditLogResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+  logs: AuditLogRecord[];
+};

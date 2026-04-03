@@ -84,6 +84,18 @@ export default function AppLayout() {
           href: null
         }}
       />
+      <Tabs.Screen
+        name="platform"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="network"
+        options={{
+          href: null
+        }}
+      />
     </Tabs>
   );
 }
