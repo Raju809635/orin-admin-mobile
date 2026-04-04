@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { usePathname, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radii, spacing } from "@/constants/theme";
@@ -45,60 +45,66 @@ export function AdminTopBar({ title = "ORIN Admin" }: { title?: string }) {
         </Pressable>
       </View>
 
-      <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
+      <Modal visible={visible} transparent animationType="slide" onRequestClose={() => setVisible(false)}>
         <View style={styles.overlay}>
           <Pressable style={styles.backdrop} onPress={() => setVisible(false)} />
           <View style={styles.drawer}>
-            <View style={styles.drawerHeader}>
-              <Text style={styles.drawerTitle}>Admin Control Center</Text>
-              <Text style={styles.drawerSubtitle}>Keep the bottom nav simple. Open deeper control sections from here.</Text>
-            </View>
+            <ScrollView
+              style={styles.drawerScroll}
+              contentContainerStyle={styles.drawerScrollContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.drawerHeader}>
+                <Text style={styles.drawerTitle}>Admin Control Center</Text>
+                <Text style={styles.drawerSubtitle}>Keep the bottom nav simple. Open deeper control sections from here.</Text>
+              </View>
 
-            <Text style={styles.groupLabel}>Main sections</Text>
-            {primaryItems.map((item) => {
-              const active = pathname === item.path;
-              return (
-                <Pressable
-                  key={item.path}
-                  style={[styles.drawerItem, active ? styles.drawerItemActive : null]}
-                  onPress={() => {
-                    setVisible(false);
-                    router.push(item.path as any);
-                  }}
-                >
-                  <View style={styles.drawerIconWrap}>
-                    <Ionicons name={item.icon} size={20} color={active ? colors.primary : colors.textMuted} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.drawerItemTitle, active ? styles.drawerItemTitleActive : null]}>{item.label}</Text>
-                    <Text style={styles.drawerItemSubtitle}>{item.subtitle}</Text>
-                  </View>
-                </Pressable>
-              );
-            })}
+              <Text style={styles.groupLabel}>Main sections</Text>
+              {primaryItems.map((item) => {
+                const active = pathname === item.path;
+                return (
+                  <Pressable
+                    key={item.path}
+                    style={[styles.drawerItem, active ? styles.drawerItemActive : null]}
+                    onPress={() => {
+                      setVisible(false);
+                      router.push(item.path as any);
+                    }}
+                  >
+                    <View style={styles.drawerIconWrap}>
+                      <Ionicons name={item.icon} size={20} color={active ? colors.primary : colors.textMuted} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.drawerItemTitle, active ? styles.drawerItemTitleActive : null]}>{item.label}</Text>
+                      <Text style={styles.drawerItemSubtitle}>{item.subtitle}</Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
 
-            <Text style={styles.groupLabel}>Deeper controls</Text>
-            {utilityItems.map((item) => {
-              const active = pathname === item.path;
-              return (
-                <Pressable
-                  key={item.path}
-                  style={[styles.drawerItem, active ? styles.drawerItemActive : null]}
-                  onPress={() => {
-                    setVisible(false);
-                    router.push(item.path as any);
-                  }}
-                >
-                  <View style={styles.drawerIconWrap}>
-                    <Ionicons name={item.icon} size={20} color={active ? colors.primary : colors.textMuted} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.drawerItemTitle, active ? styles.drawerItemTitleActive : null]}>{item.label}</Text>
-                    <Text style={styles.drawerItemSubtitle}>{item.subtitle}</Text>
-                  </View>
-                </Pressable>
-              );
-            })}
+              <Text style={styles.groupLabel}>Deeper controls</Text>
+              {utilityItems.map((item) => {
+                const active = pathname === item.path;
+                return (
+                  <Pressable
+                    key={item.path}
+                    style={[styles.drawerItem, active ? styles.drawerItemActive : null]}
+                    onPress={() => {
+                      setVisible(false);
+                      router.push(item.path as any);
+                    }}
+                  >
+                    <View style={styles.drawerIconWrap}>
+                      <Ionicons name={item.icon} size={20} color={active ? colors.primary : colors.textMuted} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.drawerItemTitle, active ? styles.drawerItemTitleActive : null]}>{item.label}</Text>
+                      <Text style={styles.drawerItemSubtitle}>{item.subtitle}</Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -137,7 +143,8 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    flexDirection: "row"
+    flexDirection: "row",
+    justifyContent: "flex-end"
   },
   backdrop: {
     flex: 1,
@@ -149,6 +156,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSoft,
     borderLeftWidth: 1,
     borderLeftColor: colors.border,
+    shadowColor: "#000",
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    shadowOffset: { width: -4, height: 0 },
+    elevation: 18
+  },
+  drawerScroll: {
+    flex: 1
+  },
+  drawerScrollContent: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xxl,
     paddingBottom: spacing.xl
