@@ -30,3 +30,10 @@ export async function getStoredSession() {
 export async function setStoredToken(token: string) {
   await AsyncStorage.setItem(TOKEN_KEY, token);
 }
+
+export async function setStoredSessionTokens(token: string, refreshToken: string) {
+  await AsyncStorage.multiSet([
+    [TOKEN_KEY, token],
+    [REFRESH_TOKEN_KEY, refreshToken]
+  ]);
+}

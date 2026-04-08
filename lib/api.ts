@@ -1,6 +1,6 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
-import { clearSessionStorage, getStoredSession, setStoredToken } from "./auth-storage";
+import { clearSessionStorage, getStoredSession, setStoredSessionTokens } from "./auth-storage";
 
 function getApiBaseUrl() {
   const extraApiUrl = (Constants.expoConfig?.extra as any)?.apiBaseUrl as string | undefined;
@@ -27,6 +27,29 @@ function getApiBaseUrl() {
 export const apiBaseUrl = getApiBaseUrl();
 
 let refreshInFlight: Promise<string | null> | null = null;
+const RETRYABLE_STATUS = new Set([502, 503, 504, 521, 522, 523, 524]);
+
+async function fetchWithRetry(url: string, options: RequestInit = {}, maxRetries = 2): Promise<Response> {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+    try {
+      const response = await fetch(url, options);
+      if (!RETRYABLE_STATUS.has(response.status) || attempt === maxRetries) {
+        return response;
+      }
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxRetries) {
+        throw error;
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1400 * (attempt + 1)));
+  }
+
+  throw lastError || new Error("Request failed");
+}
 
 async function refreshAccessToken(): Promise<string | null> {
   if (!refreshInFlight) {
@@ -34,14 +57,16 @@ async function refreshAccessToken(): Promise<string | null> {
       const { refreshToken } = await getStoredSession();
       if (!refreshToken) return null;
 
-      const response = await fetch(`${apiBaseUrl}/api/auth/refresh`, {
+      const response = await fetchWithRetry(`${apiBaseUrl}/api/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken })
       });
 
       if (!response.ok) {
-        await clearSessionStorage();
+        if (response.status === 401) {
+          await clearSessionStorage();
+        }
         return null;
       }
 
@@ -51,7 +76,7 @@ async function refreshAccessToken(): Promise<string | null> {
         return null;
       }
 
-      await setStoredToken(data.token);
+      await setStoredSessionTokens(data.token, data.refreshToken || refreshToken);
       return data.token as string;
     })().finally(() => {
       refreshInFlight = null;
@@ -75,7 +100,7 @@ export async function apiRequest<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  let response = await fetch(`${apiBaseUrl}${path}`, {
+  let response = await fetchWithRetry(`${apiBaseUrl}${path}`, {
     ...options,
     headers
   });
@@ -89,7 +114,7 @@ export async function apiRequest<T>(
     const nextToken = await refreshAccessToken();
     if (nextToken) {
       headers.set("Authorization", `Bearer ${nextToken}`);
-      response = await fetch(`${apiBaseUrl}${path}`, {
+      response = await fetchWithRetry(`${apiBaseUrl}${path}`, {
         ...options,
         headers
       });
@@ -108,4 +133,22 @@ export async function apiRequest<T>(
   }
 
   return payload as T;
+}
+
+export async function pingBackendReady() {
+  const response = await fetchWithRetry(`${apiBaseUrl}/ready`, {
+    method: "GET",
+    headers: { Accept: "application/json" }
+  });
+
+  if (!response.ok) {
+    return false;
+  }
+
+  try {
+    const data = await response.json();
+    return Boolean(data?.ready ?? data?.ok);
+  } catch {
+    return false;
+  }
 }
