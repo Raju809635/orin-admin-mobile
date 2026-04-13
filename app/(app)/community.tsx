@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, Linking, StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ActionButton, Card, ChipTabs, EmptyState, FormField, HeroCard, Label, LoadingState, Screen, SectionTitle, StatGrid, Value } from "@/components/ui";
 import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
-import { AdminChallengeRecord, AdminFeedPostRecord, AdminSprintRecord } from "@/lib/types";
+import { AdminChallengeRecord, AdminChallengeSubmissionRecord, AdminFeedPostRecord, AdminSprintRecord } from "@/lib/types";
 import { AdminTopBar } from "@/components/admin-nav";
+import { pickAndUploadImage } from "@/lib/uploads";
 
 type CommunityTab = "feed" | "challenges" | "sprints";
 
@@ -16,8 +17,19 @@ export default function CommunityScreen() {
   const [error, setError] = useState("");
   const [posts, setPosts] = useState<AdminFeedPostRecord[]>([]);
   const [challenges, setChallenges] = useState<AdminChallengeRecord[]>([]);
+  const [challengeSubmissions, setChallengeSubmissions] = useState<AdminChallengeSubmissionRecord[]>([]);
+  const [selectedChallengeId, setSelectedChallengeId] = useState("");
+  const [reviewingSubmissionId, setReviewingSubmissionId] = useState("");
+  const [reviewForm, setReviewForm] = useState({
+    rank: "",
+    xpAwarded: "",
+    notes: "",
+    certificateTitle: "",
+    issueCertificate: false
+  });
   const [sprints, setSprints] = useState<AdminSprintRecord[]>([]);
   const [creatingChallenge, setCreatingChallenge] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [challengeForm, setChallengeForm] = useState({
     title: "",
     domain: "",
@@ -120,6 +132,74 @@ export default function CommunityScreen() {
       Alert.alert("Create failed", err?.message || "Please try again.");
     } finally {
       setCreatingChallenge(false);
+    }
+  }
+
+  async function uploadChallengeBanner() {
+    if (!token) return;
+    try {
+      setUploadingBanner(true);
+      const url = await pickAndUploadImage(token);
+      if (url) {
+        setChallengeForm((prev) => ({ ...prev, bannerImageUrl: url }));
+      }
+    } catch (err: any) {
+      Alert.alert("Upload failed", err?.message || "Please try again.");
+    } finally {
+      setUploadingBanner(false);
+    }
+  }
+
+  async function loadChallengeSubmissions(challengeId: string) {
+    if (!token) return;
+    try {
+      const rows = await apiRequest<AdminChallengeSubmissionRecord[]>(
+        `/api/admin/network/challenges/${challengeId}/submissions`,
+        {},
+        token
+      );
+      setSelectedChallengeId(challengeId);
+      setChallengeSubmissions(rows || []);
+    } catch (err: any) {
+      Alert.alert("Load failed", err?.message || "Please try again.");
+    }
+  }
+
+  function startReview(submission: AdminChallengeSubmissionRecord) {
+    setReviewingSubmissionId(submission._id);
+    setReviewForm({
+      rank: submission.mentorReview?.rank ? String(submission.mentorReview?.rank || "") : "",
+      xpAwarded: submission.mentorReview?.xpAwarded ? String(submission.mentorReview?.xpAwarded || "") : "",
+      notes: submission.mentorReview?.notes || "",
+      certificateTitle: "",
+      issueCertificate: false
+    });
+  }
+
+  async function submitReview(submission: AdminChallengeSubmissionRecord, action: "accept" | "reject" | "review") {
+    if (!token) return;
+    try {
+      await apiRequest(
+        `/api/network/challenges/${submission.challengeId}/submissions/${submission._id}/review`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            action,
+            rank: Number(reviewForm.rank || 0),
+            xpAwarded: Number(reviewForm.xpAwarded || 0),
+            notes: reviewForm.notes,
+            issueCertificate: reviewForm.issueCertificate,
+            certificateTitle: reviewForm.certificateTitle
+          })
+        },
+        token
+      );
+      setReviewingSubmissionId("");
+      setReviewForm({ rank: "", xpAwarded: "", notes: "", certificateTitle: "", issueCertificate: false });
+      await loadChallengeSubmissions(submission.challengeId);
+      Alert.alert("Updated", `Submission ${action}ed successfully.`);
+    } catch (err: any) {
+      Alert.alert("Review failed", err?.message || "Please try again.");
     }
   }
 
@@ -230,12 +310,14 @@ export default function CommunityScreen() {
             onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, submissionType: text }))}
             placeholder="link / document / github"
           />
-          <FormField
-            label="Banner Image URL"
-            value={challengeForm.bannerImageUrl}
-            onChangeText={(text) => setChallengeForm((prev) => ({ ...prev, bannerImageUrl: text }))}
-            placeholder="https://..."
-          />
+          <Label>Banner Image</Label>
+          <Value muted>{challengeForm.bannerImageUrl ? "Banner uploaded" : "Upload a banner image for the challenge."}</Value>
+          <View style={styles.actions}>
+            <ActionButton label={uploadingBanner ? "Uploading..." : "Upload Banner"} tone="primary" onPress={uploadChallengeBanner} />
+            {challengeForm.bannerImageUrl ? (
+              <ActionButton label="Open Banner" onPress={() => Linking.openURL(challengeForm.bannerImageUrl)} />
+            ) : null}
+          </View>
           <FormField
             label="Skills"
             value={challengeForm.skillsCsv}
@@ -320,11 +402,118 @@ export default function CommunityScreen() {
               </View>
               <View style={styles.actions}>
                 {challenge.bannerImageUrl ? <ActionButton label="Open Banner" onPress={() => Linking.openURL(challenge.bannerImageUrl!)} /> : null}
+                <ActionButton
+                  label={selectedChallengeId === challenge._id ? "Hide Submissions" : "View Submissions"}
+                  tone="primary"
+                  onPress={() => {
+                    if (selectedChallengeId === challenge._id) {
+                      setSelectedChallengeId("");
+                      setChallengeSubmissions([]);
+                    } else {
+                      loadChallengeSubmissions(challenge._id);
+                    }
+                  }}
+                />
                 <ActionButton label={challenge.isActive ? "Disable" : "Activate"} tone="warning" onPress={() => toggleChallenge(challenge._id)} />
               </View>
             </Card>
           ))
         : null}
+
+      {tab === "challenges" && selectedChallengeId ? (
+        <Card>
+          <Text style={styles.createTitle}>Challenge Submissions</Text>
+          {challengeSubmissions.length === 0 ? (
+            <Text style={styles.subtitle}>No submissions yet for this challenge.</Text>
+          ) : (
+            challengeSubmissions.map((submission) => (
+              <View key={submission._id} style={styles.submissionCard}>
+                <Text style={styles.title}>{submission.userId?.name || "Student"}</Text>
+                <Text style={styles.subtitle}>
+                  {submission.userId?.email || "student@orin"} | {submission.status || "submitted"}
+                </Text>
+                {submission.proofNote ? (
+                  <>
+                    <Label>Proof Note</Label>
+                    <Value muted>{submission.proofNote}</Value>
+                  </>
+                ) : null}
+                {submission.proofLinks?.length ? (
+                  <>
+                    <Label>Proof Links</Label>
+                    {submission.proofLinks.map((link) => (
+                      <TouchableOpacity key={link} onPress={() => Linking.openURL(link)}>
+                        <Text style={styles.linkText}>{link}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </>
+                ) : null}
+                {submission.proofFiles?.length ? (
+                  <>
+                    <Label>Proof Files</Label>
+                    {submission.proofFiles.map((link) => (
+                      <TouchableOpacity key={link} onPress={() => Linking.openURL(link)}>
+                        <Text style={styles.linkText}>{link}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </>
+                ) : null}
+
+                {reviewingSubmissionId === submission._id ? (
+                  <>
+                    <FormField
+                      label="Rank (1-3)"
+                      value={reviewForm.rank}
+                      onChangeText={(text) => setReviewForm((prev) => ({ ...prev, rank: text }))}
+                      placeholder="1"
+                      keyboardType="numeric"
+                    />
+                    <FormField
+                      label="XP Awarded"
+                      value={reviewForm.xpAwarded}
+                      onChangeText={(text) => setReviewForm((prev) => ({ ...prev, xpAwarded: text }))}
+                      placeholder="20"
+                      keyboardType="numeric"
+                    />
+                    <FormField
+                      label="Review Notes"
+                      value={reviewForm.notes}
+                      onChangeText={(text) => setReviewForm((prev) => ({ ...prev, notes: text }))}
+                      placeholder="Great submission"
+                      multiline
+                    />
+                    <TouchableOpacity
+                      style={[styles.toggleRow, { borderColor: colors.border }]}
+                      onPress={() => setReviewForm((prev) => ({ ...prev, issueCertificate: !prev.issueCertificate }))}
+                    >
+                      <Text style={styles.toggleLabel}>Issue Certificate</Text>
+                      <Text style={styles.toggleValue}>{reviewForm.issueCertificate ? "Yes" : "No"}</Text>
+                    </TouchableOpacity>
+                    {reviewForm.issueCertificate ? (
+                      <FormField
+                        label="Certificate Title (optional)"
+                        value={reviewForm.certificateTitle}
+                        onChangeText={(text) => setReviewForm((prev) => ({ ...prev, certificateTitle: text }))}
+                        placeholder="Challenge Performance Certificate"
+                      />
+                    ) : null}
+                    <View style={styles.actions}>
+                      <ActionButton label="Save Review" tone="primary" onPress={() => submitReview(submission, "review")} />
+                      <ActionButton label="Accept" tone="primary" onPress={() => submitReview(submission, "accept")} />
+                      <ActionButton label="Reject" tone="danger" onPress={() => submitReview(submission, "reject")} />
+                      <ActionButton label="Cancel" tone="warning" onPress={() => setReviewingSubmissionId("")} />
+                    </View>
+                  </>
+                ) : (
+                  <View style={styles.actions}>
+                    <ActionButton label="Review Submission" tone="primary" onPress={() => startReview(submission)} />
+                  </View>
+                )}
+              </View>
+            ))
+          )}
+        </Card>
+      ) : null}
 
       {tab === "sprints"
         ? sprints.map((item) => (
@@ -398,6 +587,38 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm
+  },
+  submissionCard: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    backgroundColor: colors.card
+  },
+  linkText: {
+    color: colors.accent,
+    fontWeight: "700",
+    marginBottom: 6
+  },
+  toggleRow: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
+    backgroundColor: colors.card
+  },
+  toggleLabel: {
+    fontWeight: "700",
+    color: colors.text
+  },
+  toggleValue: {
+    fontWeight: "800",
+    color: colors.accent
   },
   createTitle: {
     color: colors.text,

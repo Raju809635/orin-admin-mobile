@@ -12,6 +12,7 @@ import {
   AdminOpportunityRecord
 } from "@/lib/types";
 import { AdminTopBar } from "@/components/admin-nav";
+import { pickAndUploadDocument, pickAndUploadImage } from "@/lib/uploads";
 
 type PlatformTab = "opportunities" | "resources" | "certifications" | "bootcamps";
 
@@ -26,6 +27,7 @@ export default function PlatformScreen() {
   const [requests, setRequests] = useState<AdminCertificationRequestRecord[]>([]);
   const [bootcamps, setBootcamps] = useState<AdminBootcampRecord[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const [opportunityForm, setOpportunityForm] = useState({
     title: "",
     company: "",
@@ -459,7 +461,28 @@ export default function PlatformScreen() {
           <FormField label="Work mode" value={opportunityForm.mode} onChangeText={(text) => setOpportunityForm((prev) => ({ ...prev, mode: text }))} placeholder="Online / Offline / Hybrid" />
           <FormField label="Deadline" value={opportunityForm.applicationDeadline} onChangeText={(text) => setOpportunityForm((prev) => ({ ...prev, applicationDeadline: text }))} placeholder="2026-05-01" helperText="Use YYYY-MM-DD when possible." />
           <FormField label="Apply link" value={opportunityForm.applicationUrl} onChangeText={(text) => setOpportunityForm((prev) => ({ ...prev, applicationUrl: text }))} placeholder="https://..." />
-          <FormField label="Banner / Logo URL" value={opportunityForm.logoUrl} onChangeText={(text) => setOpportunityForm((prev) => ({ ...prev, logoUrl: text }))} placeholder="https://..." />
+          <Label>Banner / Logo</Label>
+          <Value muted>{opportunityForm.logoUrl ? "Logo uploaded" : "Upload a banner/logo image for this opportunity."}</Value>
+          <View style={styles.actions}>
+            <ActionButton
+              label={uploading === "opportunityLogo" ? "Uploading..." : "Upload Logo"}
+              tone="primary"
+              disabled={uploading === "opportunityLogo"}
+              onPress={async () => {
+                if (!token) return;
+                try {
+                  setUploading("opportunityLogo");
+                  const url = await pickAndUploadImage(token);
+                  if (url) setOpportunityForm((prev) => ({ ...prev, logoUrl: url }));
+                } catch (err: any) {
+                  Alert.alert("Upload failed", err?.message || "Please try again.");
+                } finally {
+                  setUploading(null);
+                }
+              }}
+            />
+            {opportunityForm.logoUrl ? <ActionButton label="Open Logo" onPress={() => Linking.openURL(opportunityForm.logoUrl)} /> : null}
+          </View>
           <FormField label="Domain tags" value={opportunityForm.domainTagsCsv} onChangeText={(text) => setOpportunityForm((prev) => ({ ...prev, domainTagsCsv: text }))} placeholder="Technology & AI, Startup" helperText="Comma-separated tags" />
           <FormField label="Description" value={opportunityForm.description} onChangeText={(text) => setOpportunityForm((prev) => ({ ...prev, description: text }))} placeholder="What students should know before applying" multiline />
           <View style={styles.actions}>
@@ -475,8 +498,50 @@ export default function PlatformScreen() {
           <FormField label="Title" value={resourceForm.title} onChangeText={(text) => setResourceForm((prev) => ({ ...prev, title: text }))} placeholder="DSA interview question pack" />
           <FormField label="Domain" value={resourceForm.domain} onChangeText={(text) => setResourceForm((prev) => ({ ...prev, domain: text }))} placeholder="Technology & AI" />
           <FormField label="Type" value={resourceForm.type} onChangeText={(text) => setResourceForm((prev) => ({ ...prev, type: text }))} placeholder="interview_questions / roadmap / coding_resource" />
-          <FormField label="URL" value={resourceForm.url} onChangeText={(text) => setResourceForm((prev) => ({ ...prev, url: text }))} placeholder="https://..." />
-          <FormField label="Thumbnail URL" value={resourceForm.thumbnailUrl} onChangeText={(text) => setResourceForm((prev) => ({ ...prev, thumbnailUrl: text }))} placeholder="https://..." />
+          <Label>Resource File</Label>
+          <Value muted>{resourceForm.url ? "File uploaded" : "Upload a PDF/DOC resource file."}</Value>
+          <View style={styles.actions}>
+            <ActionButton
+              label={uploading === "resourceFile" ? "Uploading..." : "Upload File"}
+              tone="primary"
+              disabled={uploading === "resourceFile"}
+              onPress={async () => {
+                if (!token) return;
+                try {
+                  setUploading("resourceFile");
+                  const url = await pickAndUploadDocument(token);
+                  if (url) setResourceForm((prev) => ({ ...prev, url }));
+                } catch (err: any) {
+                  Alert.alert("Upload failed", err?.message || "Please try again.");
+                } finally {
+                  setUploading(null);
+                }
+              }}
+            />
+            {resourceForm.url ? <ActionButton label="Open File" onPress={() => Linking.openURL(resourceForm.url)} /> : null}
+          </View>
+          <Label>Thumbnail Image</Label>
+          <Value muted>{resourceForm.thumbnailUrl ? "Thumbnail uploaded" : "Upload a thumbnail image."}</Value>
+          <View style={styles.actions}>
+            <ActionButton
+              label={uploading === "resourceThumb" ? "Uploading..." : "Upload Thumbnail"}
+              tone="primary"
+              disabled={uploading === "resourceThumb"}
+              onPress={async () => {
+                if (!token) return;
+                try {
+                  setUploading("resourceThumb");
+                  const url = await pickAndUploadImage(token);
+                  if (url) setResourceForm((prev) => ({ ...prev, thumbnailUrl: url }));
+                } catch (err: any) {
+                  Alert.alert("Upload failed", err?.message || "Please try again.");
+                } finally {
+                  setUploading(null);
+                }
+              }}
+            />
+            {resourceForm.thumbnailUrl ? <ActionButton label="Open Thumbnail" onPress={() => Linking.openURL(resourceForm.thumbnailUrl)} /> : null}
+          </View>
           <FormField label="Format / Difficulty" value={resourceForm.format} onChangeText={(text) => setResourceForm((prev) => ({ ...prev, format: text }))} placeholder="pdf / video / article" />
           <FormField label="Difficulty" value={resourceForm.difficulty} onChangeText={(text) => setResourceForm((prev) => ({ ...prev, difficulty: text }))} placeholder="Beginner / Intermediate / Advanced" />
           <FormField label="Estimated minutes" value={resourceForm.estimatedMinutes} onChangeText={(text) => setResourceForm((prev) => ({ ...prev, estimatedMinutes: text }))} placeholder="20" keyboardType="numeric" />
@@ -498,7 +563,28 @@ export default function PlatformScreen() {
             <FormField label="Domain" value={trackForm.domain} onChangeText={(text) => setTrackForm((prev) => ({ ...prev, domain: text }))} placeholder="Technology & AI" />
             <FormField label="Level" value={trackForm.level} onChangeText={(text) => setTrackForm((prev) => ({ ...prev, level: text }))} placeholder="Beginner" />
             <FormField label="Badge label" value={trackForm.badgeLabel} onChangeText={(text) => setTrackForm((prev) => ({ ...prev, badgeLabel: text }))} placeholder="Admin Verified" />
-            <FormField label="Cover image URL" value={trackForm.coverImageUrl} onChangeText={(text) => setTrackForm((prev) => ({ ...prev, coverImageUrl: text }))} placeholder="https://..." />
+            <Label>Cover Image</Label>
+            <Value muted>{trackForm.coverImageUrl ? "Cover uploaded" : "Upload a cover image for the track."}</Value>
+            <View style={styles.actions}>
+              <ActionButton
+                label={uploading === "trackCover" ? "Uploading..." : "Upload Cover"}
+                tone="primary"
+                disabled={uploading === "trackCover"}
+                onPress={async () => {
+                  if (!token) return;
+                  try {
+                    setUploading("trackCover");
+                    const url = await pickAndUploadImage(token);
+                    if (url) setTrackForm((prev) => ({ ...prev, coverImageUrl: url }));
+                  } catch (err: any) {
+                    Alert.alert("Upload failed", err?.message || "Please try again.");
+                  } finally {
+                    setUploading(null);
+                  }
+                }}
+              />
+              {trackForm.coverImageUrl ? <ActionButton label="Open Cover" onPress={() => Linking.openURL(trackForm.coverImageUrl)} /> : null}
+            </View>
             <FormField label="Requirements" value={trackForm.requirementsCsv} onChangeText={(text) => setTrackForm((prev) => ({ ...prev, requirementsCsv: text }))} placeholder="Finish quiz, submit task, clear review" helperText="Comma-separated requirements" />
             <FormField label="Description" value={trackForm.description} onChangeText={(text) => setTrackForm((prev) => ({ ...prev, description: text }))} placeholder="What does this certification represent?" multiline />
             <View style={styles.actions}>
@@ -532,7 +618,28 @@ export default function PlatformScreen() {
           <FormField label="Ends at" value={bootcampForm.endsAt} onChangeText={(text) => setBootcampForm((prev) => ({ ...prev, endsAt: text }))} placeholder="2026-06-10" />
           <FormField label="Seats" value={bootcampForm.seats} onChangeText={(text) => setBootcampForm((prev) => ({ ...prev, seats: text }))} placeholder="120" keyboardType="numeric" />
           <FormField label="Registration URL" value={bootcampForm.registrationUrl} onChangeText={(text) => setBootcampForm((prev) => ({ ...prev, registrationUrl: text }))} placeholder="https://..." />
-          <FormField label="Cover image URL" value={bootcampForm.coverImageUrl} onChangeText={(text) => setBootcampForm((prev) => ({ ...prev, coverImageUrl: text }))} placeholder="https://..." />
+          <Label>Cover Image</Label>
+          <Value muted>{bootcampForm.coverImageUrl ? "Cover uploaded" : "Upload a cover image."}</Value>
+          <View style={styles.actions}>
+            <ActionButton
+              label={uploading === "bootcampCover" ? "Uploading..." : "Upload Cover"}
+              tone="primary"
+              disabled={uploading === "bootcampCover"}
+              onPress={async () => {
+                if (!token) return;
+                try {
+                  setUploading("bootcampCover");
+                  const url = await pickAndUploadImage(token);
+                  if (url) setBootcampForm((prev) => ({ ...prev, coverImageUrl: url }));
+                } catch (err: any) {
+                  Alert.alert("Upload failed", err?.message || "Please try again.");
+                } finally {
+                  setUploading(null);
+                }
+              }}
+            />
+            {bootcampForm.coverImageUrl ? <ActionButton label="Open Cover" onPress={() => Linking.openURL(bootcampForm.coverImageUrl)} /> : null}
+          </View>
           <FormField label="Description" value={bootcampForm.description} onChangeText={(text) => setBootcampForm((prev) => ({ ...prev, description: text }))} placeholder="Why should students join?" multiline />
           <View style={styles.actions}>
             <ActionButton label={submitting ? "Creating..." : "Create Bootcamp"} tone="primary" disabled={submitting} onPress={createBootcamp} />

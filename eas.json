@@ -10,7 +10,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://orin-backend.onrender.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://orin-backend-qp2g.onrender.com"
       }
     },
     "production": {
@@ -20,7 +20,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://orin-backend.onrender.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://orin-backend-qp2g.onrender.com"
       }
     }
   },

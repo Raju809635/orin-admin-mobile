@@ -322,6 +322,25 @@ export type AdminChallengeRecord = {
   updatedAt?: string;
 };
 
+export type AdminChallengeSubmissionRecord = {
+  _id: string;
+  challengeId: string;
+  userId?: { _id: string; name: string; email: string; role: Role };
+  proofNote?: string;
+  proofLinks?: string[];
+  proofFiles?: string[];
+  status?: "submitted" | "reviewed" | "accepted" | "rejected";
+  mentorReview?: {
+    rank?: number;
+    xpAwarded?: number;
+    notes?: string;
+    reviewedAt?: string | null;
+    certificateId?: string | null;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type AdminOpportunityRecord = {
   _id: string;
   title: string;
