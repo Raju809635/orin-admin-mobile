@@ -65,7 +65,7 @@ export default function ProgramsScreen() {
   async function deleteLiveSession(id: string) {
     if (!token) return;
     try {
-      await apiRequest(/api/admin/network/live-sessions/, { method: "DELETE" }, token);
+      await apiRequest(`/api/admin/network/live-sessions/${id}`, { method: "DELETE" }, token);
       await load();
       Alert.alert("Deleted", "Live session removed.");
     } catch (err: any) {
@@ -99,7 +99,7 @@ export default function ProgramsScreen() {
   async function deleteSprint(id: string) {
     if (!token) return;
     try {
-      await apiRequest(/api/admin/network/sprints/, { method: "DELETE" }, token);
+      await apiRequest(`/api/admin/network/sprints/${id}`, { method: "DELETE" }, token);
       await load();
       Alert.alert("Deleted", "Sprint removed.");
     } catch (err: any) {
