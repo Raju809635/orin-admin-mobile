@@ -81,9 +81,30 @@ export default function CommunityScreen() {
     if (!token) return;
     try {
       await apiRequest(`/api/admin/network/challenges/${id}/toggle`, { method: "PATCH" }, token);
-      await load();
+      setChallenges((current) =>
+        current.map((item) =>
+          item._id === id
+            ? {
+                ...item,
+                isActive: !item.isActive,
+                approvalStatus: item.isActive ? item.approvalStatus : "approved"
+              }
+            : item
+        )
+      );
     } catch (err: any) {
       Alert.alert("Update failed", err?.message || "Please try again.");
+    }
+  }
+
+  async function deleteChallenge(id: string) {
+    if (!token) return;
+    try {
+      await apiRequest(`/api/admin/network/challenges/${id}`, { method: "DELETE" }, token);
+      setChallenges((current) => current.filter((item) => item._id !== id));
+      Alert.alert("Deleted", "Challenge removed.");
+    } catch (err: any) {
+      Alert.alert("Delete failed", err?.message || "Please try again.");
     }
   }
 
@@ -214,7 +235,9 @@ export default function CommunityScreen() {
         },
         token
       );
-      await load();
+      setSprints((current) =>
+        current.map((item) => (item._id === id ? { ...item, approvalStatus: action === "approve" ? "approved" : "rejected" } : item))
+      );
       Alert.alert("Updated", `Sprint ${action}d successfully.`);
     } catch (err: any) {
       Alert.alert("Update failed", err?.message || "Please try again.");
@@ -225,9 +248,22 @@ export default function CommunityScreen() {
     if (!token) return;
     try {
       await apiRequest(`/api/admin/network/sprints/${id}/toggle`, { method: "PATCH" }, token);
-      await load();
+      setSprints((current) =>
+        current.map((item) => (item._id === id ? { ...item, isCancelled: !item.isCancelled } : item))
+      );
     } catch (err: any) {
       Alert.alert("Update failed", err?.message || "Please try again.");
+    }
+  }
+
+  async function deleteSprint(id: string) {
+    if (!token) return;
+    try {
+      await apiRequest(`/api/admin/network/sprints/${id}`, { method: "DELETE" }, token);
+      setSprints((current) => current.filter((item) => item._id !== id));
+      Alert.alert("Deleted", "Sprint removed.");
+    } catch (err: any) {
+      Alert.alert("Delete failed", err?.message || "Please try again.");
     }
   }
 
@@ -415,6 +451,7 @@ export default function CommunityScreen() {
                   }}
                 />
                 <ActionButton label={challenge.isActive ? "Disable" : "Activate"} tone="warning" onPress={() => toggleChallenge(challenge._id)} />
+                <ActionButton label="Delete" tone="danger" onPress={() => deleteChallenge(challenge._id)} />
               </View>
             </Card>
           ))
@@ -556,6 +593,7 @@ export default function CommunityScreen() {
                   <ActionButton label="Reject" tone="danger" onPress={() => reviewSprint(item._id, "reject")} />
                 ) : null}
                 <ActionButton label={item.isCancelled ? "Reopen" : "Cancel"} tone="warning" onPress={() => toggleSprint(item._id)} />
+                <ActionButton label="Delete" tone="danger" onPress={() => deleteSprint(item._id)} />
               </View>
             </Card>
           ))

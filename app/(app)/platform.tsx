@@ -116,9 +116,22 @@ export default function PlatformScreen() {
     if (!token) return;
     try {
       await apiRequest(`/api/admin/network/opportunities/${id}/toggle`, { method: "PATCH" }, token);
-      await load();
+      setOpportunities((current) =>
+        current.map((item) => (item._id === id ? { ...item, isActive: !item.isActive } : item))
+      );
     } catch (err: any) {
       Alert.alert("Update failed", err?.message || "Please try again.");
+    }
+  }
+
+  async function deleteOpportunity(id: string) {
+    if (!token) return;
+    try {
+      await apiRequest(`/api/admin/network/opportunities/${id}`, { method: "DELETE" }, token);
+      setOpportunities((current) => current.filter((item) => item._id !== id));
+      Alert.alert("Deleted", "Opportunity removed.");
+    } catch (err: any) {
+      Alert.alert("Delete failed", err?.message || "Please try again.");
     }
   }
 
@@ -185,10 +198,27 @@ export default function PlatformScreen() {
         { method: "PATCH", body: JSON.stringify({ action, reason: action === "reject" ? "Rejected from admin mobile" : "" }) },
         token
       );
-      await load();
+      setResources((current) =>
+        current.map((item) =>
+          item._id === id
+            ? { ...item, approvalStatus: action === "approve" ? "approved" : "rejected", isActive: action === "approve" }
+            : item
+        )
+      );
       Alert.alert("Updated", `Resource ${action}d successfully.`);
     } catch (err: any) {
       Alert.alert("Update failed", err?.message || "Please try again.");
+    }
+  }
+
+  async function deleteResource(id: string) {
+    if (!token) return;
+    try {
+      await apiRequest(`/api/admin/network/knowledge-resources/${id}`, { method: "DELETE" }, token);
+      setResources((current) => current.filter((item) => item._id !== id));
+      Alert.alert("Deleted", "Resource removed.");
+    } catch (err: any) {
+      Alert.alert("Delete failed", err?.message || "Please try again.");
     }
   }
 
@@ -679,6 +709,7 @@ export default function PlatformScreen() {
               <View style={styles.actions}>
                 {item.applicationUrl ? <ActionButton label="Open Link" onPress={() => Linking.openURL(item.applicationUrl!)} /> : null}
                 <ActionButton label={item.isActive ? "Disable" : "Activate"} tone="warning" onPress={() => toggleOpportunity(item._id)} />
+                <ActionButton label="Delete" tone="danger" onPress={() => deleteOpportunity(item._id)} />
               </View>
             </Card>
           ))
@@ -705,6 +736,7 @@ export default function PlatformScreen() {
                 {item.url ? <ActionButton label="Open Resource" onPress={() => Linking.openURL(item.url!)} /> : null}
                 {item.approvalStatus !== "approved" ? <ActionButton label="Approve" tone="primary" onPress={() => reviewResource(item._id, "approve")} /> : null}
                 {item.approvalStatus !== "rejected" ? <ActionButton label="Reject" tone="danger" onPress={() => reviewResource(item._id, "reject")} /> : null}
+                <ActionButton label="Delete" tone="danger" onPress={() => deleteResource(item._id)} />
               </View>
             </Card>
           ))

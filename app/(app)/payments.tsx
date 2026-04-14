@@ -4,10 +4,10 @@ import { ActionButton, Card, ChipTabs, EmptyState, HeroCard, Label, LoadingState
 import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api";
-import { AdminSprintPayoutRecord, ManualPaymentRecord, SessionPayoutRecord } from "@/lib/types";
+import { AdminLiveSessionBookingRecord, AdminSprintPayoutRecord, ManualPaymentRecord, SessionPayoutRecord } from "@/lib/types";
 import { AdminTopBar } from "@/components/admin-nav";
 
-type PaymentTab = "manual" | "session" | "sprint";
+type PaymentTab = "overview" | "manual" | "session" | "sprint";
 
 export default function PaymentsScreen() {
   const { token } = useAuth();
@@ -18,16 +18,18 @@ export default function PaymentsScreen() {
   const [manualPayments, setManualPayments] = useState<ManualPaymentRecord[]>([]);
   const [sessionPayouts, setSessionPayouts] = useState<SessionPayoutRecord[]>([]);
   const [sprintPayouts, setSprintPayouts] = useState<AdminSprintPayoutRecord[]>([]);
+  const [liveSessionBookings, setLiveSessionBookings] = useState<AdminLiveSessionBookingRecord[]>([]);
 
   async function load() {
     if (!token) return;
     try {
       setLoading(true);
       setError("");
-      const [manualResult, sessionResult, sprintResult] = await Promise.allSettled([
+      const [manualResult, sessionResult, sprintResult, liveBookingsResult] = await Promise.allSettled([
         apiRequest<ManualPaymentRecord[]>("/api/sessions/admin/manual-payments", {}, token),
         apiRequest<SessionPayoutRecord[]>("/api/sessions/admin/payouts", {}, token),
-        apiRequest<AdminSprintPayoutRecord[]>("/api/admin/network/sprint-payouts", {}, token)
+        apiRequest<AdminSprintPayoutRecord[]>("/api/admin/network/sprint-payouts", {}, token),
+        apiRequest<AdminLiveSessionBookingRecord[]>("/api/admin/network/live-sessions/bookings", {}, token)
       ]);
 
       if (manualResult.status === "fulfilled") {
@@ -50,6 +52,12 @@ export default function PaymentsScreen() {
       } else {
         setSprintPayouts([]);
         setSprintUnavailable(true);
+      }
+
+      if (liveBookingsResult.status === "fulfilled") {
+        setLiveSessionBookings(liveBookingsResult.value);
+      } else {
+        setLiveSessionBookings([]);
       }
     } catch (err: any) {
       setError(err?.message || "Failed to load payments");
@@ -127,7 +135,13 @@ export default function PaymentsScreen() {
   }, [manualPayments, sessionPayouts, sprintPayouts]);
 
   const activeLength =
-    paymentTab === "manual" ? manualPayments.length : paymentTab === "session" ? sessionPayouts.length : sprintPayouts.length;
+    paymentTab === "manual"
+      ? manualPayments.length
+      : paymentTab === "session"
+        ? sessionPayouts.length
+        : paymentTab === "sprint"
+          ? sprintPayouts.length
+          : manualPayments.length + sessionPayouts.length + sprintPayouts.length + liveSessionBookings.length;
 
   if (loading && !manualPayments.length && !sessionPayouts.length && !sprintPayouts.length) {
     return <LoadingState label="Loading payments..." />;
@@ -147,6 +161,7 @@ export default function PaymentsScreen() {
         value={paymentTab}
         onChange={setPaymentTab}
         options={[
+          { label: "All Paid", value: "overview" },
           { label: "Manual Proofs", value: "manual" },
           { label: "1:1 Payouts", value: "session" },
           ...(sprintUnavailable ? [] : [{ label: "Sprint Payouts", value: "sprint" as PaymentTab }])
@@ -174,6 +189,60 @@ export default function PaymentsScreen() {
           title="Queue is clear"
           subtitle="No payment or payout items need action in this tab right now."
         />
+      ) : null}
+
+      {paymentTab === "overview" ? (
+        <>
+          {[...sessionPayouts, ...sprintPayouts]
+            .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime())
+            .map((item) => {
+              const isSprint = Boolean((item as AdminSprintPayoutRecord).sprintId);
+              const title = isSprint ? "Sprint payment" : "1:1 session payment";
+              const student = isSprint ? (item as AdminSprintPayoutRecord).studentId?.name : (item as SessionPayoutRecord).studentId?.name;
+              const mentor = isSprint ? (item as AdminSprintPayoutRecord).mentorId?.name : (item as SessionPayoutRecord).mentorId?.name;
+              const schedule = isSprint
+                ? (item as AdminSprintPayoutRecord).sprintId?.startDate
+                : (item as SessionPayoutRecord).date && (item as SessionPayoutRecord).time
+                  ? `${(item as SessionPayoutRecord).date} ${(item as SessionPayoutRecord).time}`
+                  : "";
+              return (
+                <Card key={`paid-${item._id}`}>
+                  <Text style={styles.title}>{title}</Text>
+                  <Text style={styles.subtitle}>{student || "Student"} → {mentor || "Mentor"} {schedule ? `| ${schedule}` : ""}</Text>
+                  <View style={styles.row}>
+                    <View style={styles.flexOne}>
+                      <Label>Amount</Label>
+                      <Value>INR {item.amount || 0}</Value>
+                    </View>
+                    <View style={styles.flexOne}>
+                      <Label>Status</Label>
+                      <Value>{item.paymentStatus || item.payoutStatus}</Value>
+                    </View>
+                  </View>
+                </Card>
+              );
+            })}
+
+          {liveSessionBookings.map((booking) => (
+            <Card key={`live-paid-${booking._id}`}>
+              <Text style={styles.title}>Live session payment</Text>
+              <Text style={styles.subtitle}>
+                {booking.studentId?.name || "Student"} → {booking.mentorId?.name || "Mentor"}{" "}
+                {booking.liveSessionId?.startsAt ? `| ${new Date(booking.liveSessionId.startsAt).toLocaleString()}` : ""}
+              </Text>
+              <View style={styles.row}>
+                <View style={styles.flexOne}>
+                  <Label>Session</Label>
+                  <Value>{booking.liveSessionId?.title || "Live session"}</Value>
+                </View>
+                <View style={styles.flexOne}>
+                  <Label>Amount</Label>
+                  <Value>INR {booking.amount || booking.liveSessionId?.price || 0}</Value>
+                </View>
+              </View>
+            </Card>
+          ))}
+        </>
       ) : null}
 
       {paymentTab === "manual"

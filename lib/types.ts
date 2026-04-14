@@ -87,6 +87,8 @@ export type SessionPayoutRecord = {
   time: string;
   amount: number;
   currency?: string;
+  createdAt?: string;
+  updatedAt?: string;
   paymentStatus: "pending" | "waiting_verification" | "verified" | "rejected" | "paid";
   sessionStatus: "booked" | "confirmed" | "completed";
   status: "pending" | "payment_pending" | "confirmed" | "approved" | "completed" | "cancelled" | "rejected";
@@ -137,6 +139,26 @@ export type AdminLiveSessionRecord = {
   };
 };
 
+export type AdminLiveSessionBookingRecord = {
+  _id: string;
+  amount?: number;
+  currency?: string;
+  paymentStatus?: "pending" | "paid" | "failed" | "cancelled";
+  bookingStatus?: "pending_payment" | "booked" | "cancelled";
+  createdAt?: string;
+  studentId?: { _id: string; name: string; email: string };
+  mentorId?: { _id: string; name: string; email: string; role: Role };
+  liveSessionId?: {
+    _id: string;
+    title?: string;
+    startsAt?: string;
+    sessionMode?: "free" | "paid";
+    price?: number;
+    currency?: string;
+    posterImageUrl?: string;
+  };
+};
+
 export type AdminSprintRecord = {
   _id: string;
   title: string;
@@ -176,6 +198,8 @@ export type AdminSprintPayoutRecord = {
   _id: string;
   amount: number;
   currency?: string;
+  createdAt?: string;
+  updatedAt?: string;
   paymentStatus: "pending" | "paid" | "failed" | "cancelled";
   platformFeeAmount: number;
   mentorPayoutAmount: number;
@@ -316,6 +340,7 @@ export type AdminChallengeRecord = {
   submissionType?: string;
   skills?: string[];
   tasks?: string[];
+  approvalStatus?: "pending" | "approved" | "rejected";
   isActive?: boolean;
   isFeatured?: boolean;
   createdAt?: string;

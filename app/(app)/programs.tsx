@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Linking, StyleSheet, Text, View } from "react-native";
 import { ActionButton, Card, ChipTabs, EmptyState, HeroCard, Label, LoadingState, Screen, SectionTitle, StatGrid, Value } from "@/components/ui";
 import { colors, spacing } from "@/constants/theme";
@@ -62,6 +62,16 @@ export default function ProgramsScreen() {
     }
   }
 
+  async function deleteLiveSession(id: string) {
+    if (!token) return;
+    try {
+      await apiRequest(/api/admin/network/live-sessions/, { method: "DELETE" }, token);
+      await load();
+      Alert.alert("Deleted", "Live session removed.");
+    } catch (err: any) {
+      Alert.alert("Delete failed", err?.message || "Please try again.");
+    }
+  }
   async function reviewSprint(id: string, action: "approve" | "reject") {
     if (!token) return;
     try {
@@ -86,6 +96,16 @@ export default function ProgramsScreen() {
     }
   }
 
+  async function deleteSprint(id: string) {
+    if (!token) return;
+    try {
+      await apiRequest(/api/admin/network/sprints/, { method: "DELETE" }, token);
+      await load();
+      Alert.alert("Deleted", "Sprint removed.");
+    } catch (err: any) {
+      Alert.alert("Delete failed", err?.message || "Please try again.");
+    }
+  }
   const stats = useMemo(() => {
     const pendingLive = liveSessions.filter((item) => item.approvalStatus === "pending").length;
     const pendingSprints = sprints.filter((item) => item.approvalStatus === "pending").length;
@@ -135,7 +155,7 @@ export default function ProgramsScreen() {
       {!visibleItems.length ? (
         <EmptyState
           title={programTab === "live" ? "No live sessions yet" : "No sprints yet"}
-          subtitle="When mentors submit programs, they�ll appear here for approval and control."
+          subtitle="When mentors submit programs, they’ll appear here for approval and control."
         />
       ) : null}
 
@@ -182,6 +202,7 @@ export default function ProgramsScreen() {
                   tone="warning"
                   onPress={() => toggleLiveSession(item._id)}
                 />
+                <ActionButton label="Delete" tone="danger" onPress={() => deleteLiveSession(item._id)} />
               </View>
             </Card>
           ))
@@ -235,6 +256,7 @@ export default function ProgramsScreen() {
                   tone="warning"
                   onPress={() => toggleSprint(item._id)}
                 />
+                <ActionButton label="Delete" tone="danger" onPress={() => deleteSprint(item._id)} />
               </View>
             </Card>
           ))}
@@ -267,3 +289,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   }
 });
+
+
+
