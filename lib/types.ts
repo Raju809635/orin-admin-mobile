@@ -244,6 +244,15 @@ export type PendingMentorRecord = {
   subCategory?: string;
   specializations?: string[];
   createdAt: string;
+  mentorProfile?: {
+    mentorOrgRole?: "global_mentor" | "institution_teacher" | "organisation_head";
+    institutionName?: string;
+    institutionType?: string;
+    institutionDistrict?: string;
+    assignedClasses?: string[];
+    institutionPermissions?: string[];
+    phoneNumber?: string;
+  } | null;
 };
 
 export type MentorProfileRecord = {
@@ -274,6 +283,13 @@ export type MentorProfileRecord = {
   }>;
   rating?: number;
   totalSessionsConducted?: number;
+  mentorOrgRole?: "global_mentor" | "institution_teacher" | "organisation_head";
+  institutionName?: string;
+  institutionType?: string;
+  institutionDistrict?: string;
+  institutionSource?: string;
+  assignedClasses?: string[];
+  institutionPermissions?: string[];
 };
 
 export type CollaborateApplicationRecord = {

@@ -116,15 +116,15 @@ export default function OperationsScreen() {
 
   return (
     <Screen>
-      <AdminTopBar title="Operations" />
+      <AdminTopBar title="Approvals" />
       <HeroCard
-        title="Operations Center"
-        subtitle="Move fast on mentor approvals, complaints, and collaboration requests without getting trapped in a web-table workflow."
+        title="Approval Center"
+        subtitle="Move fast on global mentor, teacher/head, complaint, content, and collaboration review without getting trapped in a web-table workflow."
         rightLabel="Fast Action"
       />
       <StatGrid items={stats} />
 
-      <SectionTitle title="Action queues" subtitle="Switch between the three admin queues that usually need same-day attention." />
+      <SectionTitle title="Action queues" subtitle="Approvals stay here. People, institution work, and global modules should not be mixed into this tab." />
       <ChipTabs
         value={tab}
         onChange={setTab}
@@ -143,7 +143,7 @@ export default function OperationsScreen() {
       ) : null}
 
       {tab === "approvals" && !pendingMentors.length ? (
-        <EmptyState title={emptyTitle} subtitle="When new mentors apply, they will appear here with category context and approval controls." />
+        <EmptyState title={emptyTitle} subtitle="Global mentors, class teachers, and organisation heads waiting for approval will appear here." />
       ) : null}
       {tab === "complaints" && !complaints.length ? (
         <EmptyState title={emptyTitle} subtitle="User issues will surface here for admin response and resolution tracking." />
@@ -153,35 +153,48 @@ export default function OperationsScreen() {
       ) : null}
 
       {tab === "approvals"
-        ? pendingMentors.map((mentor) => (
-            <Card key={mentor._id}>
-              <Text style={styles.title}>{mentor.name}</Text>
-              <Text style={styles.subtitle}>{mentor.email}</Text>
-              <View style={styles.row}>
-                <View style={styles.flexOne}>
-                  <Label>Category</Label>
-                  <Value>{mentor.primaryCategory || "Not set"}</Value>
+        ? pendingMentors.map((mentor) => {
+            const profile = mentor.mentorProfile || {};
+            return (
+              <Card key={mentor._id}>
+                <Text style={styles.title}>{mentor.name}</Text>
+                <Text style={styles.subtitle}>{mentor.email}</Text>
+                <View style={styles.row}>
+                  <View style={styles.flexOne}>
+                    <Label>Category</Label>
+                    <Value>{mentor.primaryCategory || "Not set"}</Value>
+                  </View>
+                  <View style={styles.flexOne}>
+                    <Label>Admin role</Label>
+                    <Value muted>{profile.mentorOrgRole || "global_mentor"}</Value>
+                  </View>
                 </View>
-                <View style={styles.flexOne}>
-                  <Label>Sub-category</Label>
-                  <Value muted>{mentor.subCategory || "Not set"}</Value>
+                <View style={styles.row}>
+                  <View style={styles.flexOne}>
+                    <Label>Institution</Label>
+                    <Value muted>{profile.institutionName || "Global / not linked"}</Value>
+                  </View>
+                  <View style={styles.flexOne}>
+                    <Label>Classes</Label>
+                    <Value muted>{profile.assignedClasses?.length ? profile.assignedClasses.join(", ") : "Not assigned"}</Value>
+                  </View>
                 </View>
-              </View>
-              <View style={styles.row}>
-                <View style={styles.flexOne}>
-                  <Label>Specializations</Label>
-                  <Value muted>{mentor.specializations?.length ? mentor.specializations.join(", ") : "No specializations yet"}</Value>
+                <View style={styles.row}>
+                  <View style={styles.flexOne}>
+                    <Label>Specializations</Label>
+                    <Value muted>{mentor.specializations?.length ? mentor.specializations.join(", ") : "No specializations yet"}</Value>
+                  </View>
+                  <View style={styles.flexOne}>
+                    <Label>Applied</Label>
+                    <Value muted>{new Date(mentor.createdAt).toLocaleString()}</Value>
+                  </View>
                 </View>
-                <View style={styles.flexOne}>
-                  <Label>Applied</Label>
-                  <Value muted>{new Date(mentor.createdAt).toLocaleString()}</Value>
+                <View style={styles.actions}>
+                  <ActionButton label="Approve" tone="primary" onPress={() => approveMentor(mentor._id)} />
                 </View>
-              </View>
-              <View style={styles.actions}>
-                <ActionButton label="Approve" tone="primary" onPress={() => approveMentor(mentor._id)} />
-              </View>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         : null}
 
       {tab === "complaints"

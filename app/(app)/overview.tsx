@@ -54,10 +54,10 @@ export default function OverviewScreen() {
 
   return (
     <Screen>
-      <AdminTopBar title="Overview" />
+      <AdminTopBar title="Home" />
       <HeroCard
         title={`Welcome, ${user?.name?.split(" ")[0] || "Admin"}`}
-        subtitle="Track the platform pulse, move fast on approvals, and stay on top of ORIN programs and payouts."
+        subtitle="Track ORIN across students, teachers, heads, global mentors, institutions, approvals, global programs, and payouts."
         rightLabel="Mobile Control"
       />
 
@@ -74,24 +74,24 @@ export default function OverviewScreen() {
       <SectionTitle title="Priority actions" subtitle="Jump straight into the admin flows that move the business." />
       <View style={styles.actionGrid}>
         <Card style={styles.actionCard}>
-          <Text style={styles.actionTitle}>Operations Queue</Text>
-          <Text style={styles.actionText}>Handle mentor approvals, complaints, and collaboration requests from one mobile queue.</Text>
-          <ActionButton label="Open Operations" onPress={() => router.push("/operations")} tone="primary" />
+          <Text style={styles.actionTitle}>Approval Queue</Text>
+          <Text style={styles.actionText}>Handle mentor approvals, complaints, institution-side review, and collaboration requests.</Text>
+          <ActionButton label="Open Approvals" onPress={() => router.push("/operations")} tone="primary" />
         </Card>
         <Card style={styles.actionCard}>
-          <Text style={styles.actionTitle}>Mentorship Control</Text>
-          <Text style={styles.actionText}>Manage mentors, live sessions, and payout readiness without leaving the admin phone app.</Text>
-          <ActionButton label="Open Mentorship" onPress={() => router.push("/mentorship")} tone="primary" />
+          <Text style={styles.actionTitle}>People Control</Text>
+          <Text style={styles.actionText}>Review students, global mentors, class teachers, organisation heads, sessions, and payout readiness.</Text>
+          <ActionButton label="Open People" onPress={() => router.push("/mentorship")} tone="primary" />
         </Card>
         <Card style={styles.actionCard}>
-          <Text style={styles.actionTitle}>Community Moderation</Text>
-          <Text style={styles.actionText}>Review sprints, moderate feed posts, and control challenge visibility in a mobile-first flow.</Text>
-          <ActionButton label="Open Community" onPress={() => router.push("/community")} tone="primary" />
+          <Text style={styles.actionTitle}>Global Control</Text>
+          <Text style={styles.actionText}>Moderate global posts, global challenges, sprints, and ORIN-wide visibility.</Text>
+          <ActionButton label="Open Global" onPress={() => router.push("/community")} tone="primary" />
         </Card>
         <Card style={styles.actionCard}>
-          <Text style={styles.actionTitle}>Platform Builder</Text>
-          <Text style={styles.actionText}>Create bootcamps, hackathons, competitions, resources, and admin-verified certification tracks.</Text>
-          <ActionButton label="Open Platform" onPress={() => router.push("/platform")} tone="primary" />
+          <Text style={styles.actionTitle}>Institution Map</Text>
+          <Text style={styles.actionText}>Watch schools, colleges, states, heads, teachers, and student reach from the institution tab.</Text>
+          <ActionButton label="Open Institutions" onPress={() => router.push("/more")} tone="primary" />
         </Card>
         <Card style={styles.actionCard}>
           <Text style={styles.actionTitle}>Students & Payments</Text>

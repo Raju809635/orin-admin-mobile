@@ -94,12 +94,12 @@ export default function MentorshipScreen() {
 
   const stats = useMemo(
     () => [
-      { label: "Approved Mentors", value: mentors.filter((item) => item.approvalStatus === "approved").length, tone: "primary" as const },
-      { label: "Pending Live", value: liveSessions.filter((item) => item.approvalStatus === "pending").length, tone: "warning" as const },
-      { label: "Upcoming Live", value: liveSessions.filter((item) => !item.isCancelled).length, tone: "accent" as const },
+      { label: "Global Mentors", value: mentors.filter((item) => !item.mentorOrgRole || item.mentorOrgRole === "global_mentor").length, tone: "primary" as const },
+      { label: "Class Teachers", value: mentors.filter((item) => item.mentorOrgRole === "institution_teacher").length, tone: "accent" as const },
+      { label: "Org Heads", value: mentors.filter((item) => item.mentorOrgRole === "organisation_head").length, tone: "warning" as const },
       { label: "Pending Payouts", value: sessionPayouts.filter((item) => item.payoutStatus === "pending").length, tone: "danger" as const }
     ],
-    [mentors, liveSessions, sessionPayouts]
+    [mentors, sessionPayouts]
   );
 
   if (loading && !mentors.length && !liveSessions.length && !sessionPayouts.length) {
@@ -108,15 +108,15 @@ export default function MentorshipScreen() {
 
   return (
     <Screen>
-      <AdminTopBar title="Mentorship" />
+      <AdminTopBar title="People" />
       <HeroCard
-        title="Mentorship Control"
-        subtitle="Keep mentors healthy, live sessions visible, and payouts moving with mobile-first oversight."
-        rightLabel="Mentor Ops"
+        title="People Control"
+        subtitle="Separate global mentors, class teachers, organisation heads, live sessions, and payout readiness from one mobile surface."
+        rightLabel="People"
       />
       <StatGrid items={stats} />
 
-      <SectionTitle title="Mentorship lanes" subtitle="Each lane is tuned for quick mobile review instead of dense desktop tables." />
+      <SectionTitle title="People lanes" subtitle="Mentor identities live here. Approvals stay in Approvals, and institution analytics stay in Institutions." />
       <ChipTabs
         value={tab}
         onChange={setTab}
@@ -147,18 +147,18 @@ export default function MentorshipScreen() {
               </Text>
               <View style={styles.row}>
                 <View style={styles.flexOne}>
-                  <Label>Category</Label>
-                  <Value>{mentor.primaryCategory || "Not set"}</Value>
+                  <Label>Role mode</Label>
+                  <Value>{mentor.mentorOrgRole || "global_mentor"}</Value>
                 </View>
                 <View style={styles.flexOne}>
-                  <Label>Price</Label>
-                  <Value>{mentor.sessionPrice ? `INR ${mentor.sessionPrice}` : "Not set"}</Value>
+                  <Label>Institution</Label>
+                  <Value>{mentor.institutionName || "Global / not linked"}</Value>
                 </View>
               </View>
               <View style={styles.row}>
                 <View style={styles.flexOne}>
-                  <Label>Experience</Label>
-                  <Value muted>{mentor.experienceYears ? `${mentor.experienceYears} years` : "Not set"}</Value>
+                  <Label>Classes</Label>
+                  <Value muted>{mentor.assignedClasses?.length ? mentor.assignedClasses.join(", ") : "Not assigned"}</Value>
                 </View>
                 <View style={styles.flexOne}>
                   <Label>Payout setup</Label>

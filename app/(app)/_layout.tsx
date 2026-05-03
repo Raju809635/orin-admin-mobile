@@ -34,36 +34,36 @@ export default function AppLayout() {
       <Tabs.Screen
         name="overview"
         options={{
-          title: "Overview",
+          title: "Home",
           tabBarIcon: ({ color, size }) => <Ionicons name="grid" color={color} size={size} />
         }}
       />
       <Tabs.Screen
         name="operations"
         options={{
-          title: "Operations",
-          tabBarIcon: ({ color, size }) => <Ionicons name="flash" color={color} size={size} />
-        }}
-      />
-      <Tabs.Screen
-        name="mentorship"
-        options={{
-          title: "Mentorship",
-          tabBarIcon: ({ color, size }) => <Ionicons name="school" color={color} size={size} />
-        }}
-      />
-      <Tabs.Screen
-        name="community"
-        options={{
-          title: "Community",
-          tabBarIcon: ({ color, size }) => <Ionicons name="people" color={color} size={size} />
+          title: "Approvals",
+          tabBarIcon: ({ color, size }) => <Ionicons name="shield-checkmark" color={color} size={size} />
         }}
       />
       <Tabs.Screen
         name="more"
         options={{
-          title: "More",
-          tabBarIcon: ({ color, size }) => <Ionicons name="menu" color={color} size={size} />
+          title: "Institutions",
+          tabBarIcon: ({ color, size }) => <Ionicons name="business" color={color} size={size} />
+        }}
+      />
+      <Tabs.Screen
+        name="mentorship"
+        options={{
+          title: "People",
+          tabBarIcon: ({ color, size }) => <Ionicons name="people" color={color} size={size} />
+        }}
+      />
+      <Tabs.Screen
+        name="community"
+        options={{
+          title: "Global",
+          tabBarIcon: ({ color, size }) => <Ionicons name="globe-outline" color={color} size={size} />
         }}
       />
       <Tabs.Screen

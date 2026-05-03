@@ -12,19 +12,19 @@ type DrawerItem = {
 };
 
 const primaryItems: DrawerItem[] = [
-  { label: "Overview", subtitle: "Platform pulse and quick actions", path: "/overview", icon: "grid" },
-  { label: "Operations", subtitle: "Approvals, complaints, collaborations", path: "/operations", icon: "flash" },
-  { label: "Mentorship", subtitle: "Mentors, sessions, payouts", path: "/mentorship", icon: "school" },
-  { label: "Community", subtitle: "Feed, challenges, sprints", path: "/community", icon: "people" },
-  { label: "More", subtitle: "Notifications, security, settings", path: "/more", icon: "menu" }
+  { label: "Home", subtitle: "Platform pulse and quick actions", path: "/overview", icon: "grid" },
+  { label: "Approvals", subtitle: "Mentors, complaints, content review", path: "/operations", icon: "shield-checkmark" },
+  { label: "Institutions", subtitle: "Schools, reach, heads, teachers", path: "/more", icon: "business" },
+  { label: "People", subtitle: "Students, mentors, teachers, heads", path: "/mentorship", icon: "people" },
+  { label: "Global", subtitle: "Global posts, challenges, resources", path: "/community", icon: "globe-outline" }
 ];
 
 const utilityItems: DrawerItem[] = [
-  { label: "Mentors", subtitle: "Browse mentor profiles and live controls", path: "/mentorship", icon: "ribbon" },
+  { label: "Mentors & People", subtitle: "Browse mentor profiles and live controls", path: "/mentorship", icon: "ribbon" },
   { label: "Students", subtitle: "Browse all registered students", path: "/students", icon: "person-circle" },
   { label: "Payments", subtitle: "Manual proofs and payout queues", path: "/payments", icon: "wallet" },
   { label: "Programs", subtitle: "Live sessions and sprint review", path: "/programs", icon: "layers" },
-  { label: "Platform", subtitle: "Banners, opportunities, resources, certifications, bootcamps", path: "/platform", icon: "albums" },
+  { label: "Global Platform", subtitle: "Opportunities, resources, certifications, bootcamps", path: "/platform", icon: "albums" },
   { label: "Network", subtitle: "Connections, follows, mentor groups, audit logs", path: "/network", icon: "git-network" }
 ];
 

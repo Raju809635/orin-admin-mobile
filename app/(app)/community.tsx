@@ -283,28 +283,28 @@ export default function CommunityScreen() {
 
   return (
     <Screen>
-      <AdminTopBar title="Community" />
+      <AdminTopBar title="Global" />
       <HeroCard
-        title="Community Control"
-        subtitle="Moderate the feed, keep challenges healthy, and approve the cohort programs students actually see."
-        rightLabel="Community"
+        title="Global Control"
+        subtitle="Keep ORIN-wide posts, global challenges, competitions, sprints, and community visibility separate from institution/class work."
+        rightLabel="Global"
       />
       <StatGrid items={stats} />
 
-      <SectionTitle title="Community lanes" subtitle="This keeps content moderation and program review fast enough for phone-first admin work." />
+      <SectionTitle title="Global lanes" subtitle="Only ORIN-wide/global work belongs here. School/class work stays inside teacher/head institution flows." />
       <ChipTabs
         value={tab}
         onChange={setTab}
         options={[
-          { label: "Feed", value: "feed" },
-          { label: "Challenges", value: "challenges" },
-          { label: "Sprints", value: "sprints" }
+          { label: "Global Feed", value: "feed" },
+          { label: "Global Challenges", value: "challenges" },
+          { label: "Global Sprints", value: "sprints" }
         ]}
       />
 
       {tab === "challenges" ? (
         <Card>
-          <Text style={styles.createTitle}>Launch Challenge Or Banner Campaign</Text>
+          <Text style={styles.createTitle}>Launch Global Challenge Or Banner Campaign</Text>
           <Text style={styles.createSubtitle}>
             Use the challenge banner and featured flag to place visible ORIN campaigns in front of students.
           </Text>
